@@ -1,12 +1,44 @@
-name: Test Workflow
+name: Discord Notifications
 
 on:
   push:
     branches: [master, main]
+  pull_request:
+    types: [opened, closed, merged]
+  release:
+    types: [published]
 
 jobs:
-  debug:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo push
-        run: echo "Workflow detected!"
+      # -----------------------
+      # Debug step (always runs)
+      # -----------------------
+      - name: Debug - confirm workflow runs
+        shell: nu
+        run: echo "GitHub workflow detected! Event: ${{ github.event_name }}"
+
+      # -----------------------
+      # Push notifications
+      # -----------------------
+      - name: Push Notification
+        if: github.event_name == 'push'
+        shell: nu
+        run: curl -X POST -H "Content-Type: application/json" -d '{"content": "**New push to '${{ github.ref_name }}' by '${{ github.actor }}'**\nCommit: '${{ github.event.head_commit.message }}'"}' ${{ secrets.DISCORD_WEBHOOK }}
+
+      # -----------------------
+      # Pull Request notifications
+      # -----------------------
+      - name: Pull Request Notification
+        if: github.event_name == 'pull_request'
+        shell: nu
+        run: curl -X POST -H "Content-Type: application/json" -d '{"content": "**Pull request '${{ github.event.action }}'**\nTitle: '${{ github.event.pull_request.title }}'\nBy: '${{ github.event.pull_request.user.login }}'\nURL: '${{ github.event.pull_request.html_url }}'"}' ${{ secrets.DISCORD_WEBHOOK }}
+
+      # -----------------------
+      # Release notifications
+      # -----------------------
+      - name: Release Notification
+        if: github.event_name == 'release'
+        shell: nu
+        run: curl -X POST -H "Content-Type: application/json" -d '{"content": "**New release: '${{ github.event.release.tag_name }}'**\nBy: '${{ github.event.release.author.login }}'\nURL: '${{ github.event.release.html_url }}'"}' ${{ secrets.DISCORD_WEBHOOK }}
