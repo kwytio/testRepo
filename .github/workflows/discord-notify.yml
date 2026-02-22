@@ -15,19 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          URL: ${{ github.event.head_commit.url }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "{
-            \"embeds\": [{
-              \"title\": \"${{ github.event_name }} in ${{ github.repository }}\",
-              \"color\": 5814783,
-              \"fields\": [
-                { \"name\": \"👤 Actor\", \"value\": \"${{ github.actor }}\", \"inline\": true },
-                { \"name\": \"🌿 Branch\", \"value\": \"${{ github.ref_name }}\", \"inline\": true },
-                { \"name\": \"💬 Commit\", \"value\": \"${{ github.event.head_commit.message }}\", \"inline\": false },
-                { \"name\": \"🔗 Link\", \"value\": \"${{ github.event.head_commit.url }}\", \"inline\": false }
-              ]
-            }]
-          }" \
-          ${{ secrets.DISCORD_WEBHOOK }}
+          curl -H "Content-Type: application/json" -X POST -d "{\"embeds\":[{\"title\":\"${EVENT} in ${REPO}\",\"color\":5814783,\"fields\":[{\"name\":\"Actor\",\"value\":\"${ACTOR}\",\"inline\":true},{\"name\":\"Branch\",\"value\":\"${BRANCH}\",\"inline\":true},{\"name\":\"Commit\",\"value\":\"${MESSAGE}\"},{\"name\":\"Link\",\"value\":\"${URL}\"}]}]}" "$DISCORD_WEBHOOK"
