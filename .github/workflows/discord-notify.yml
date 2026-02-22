@@ -4,7 +4,7 @@ on:
   push:
     branches: ["*"]
   pull_request:
-    types: [opened, closed, reopened]
+    types: [opened, closed, merged]
   issues:
     types: [opened, closed]
   release:
@@ -15,41 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord Notification
+        uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEB_HOOK }}
-          EVENT: ${{ github.event_name }}
-          REPO: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          BRANCH: ${{ github.ref_name }}
-          MESSAGE: ${{ github.event.head_commit.message }}
-          URL: ${{ github.event.head_commit.url }}
-        run: |
-          python3 - <<'EOF'
-          import json, os, urllib.request
-
-          webhook = os.environ.get("DISCORD_WEBHOOK", "").strip()
-
-          if not webhook:
-            print("ERROR: DISCORD_WEBHOOK secret is empty or not set!")
-            print("Go to: Settings > Secrets and variables > Actions > New repository secret")
-            print("Name: DISCORD_WEBHOOK")
-            print("Value: your Discord webhook URL (starts with https://discord.com/api/webhooks/...)")
-            exit(1)
-
-          payload = {
-            "embeds": [{
-              "title": f"{os.environ['EVENT']} in {os.environ['REPO']}",
-              "color": 5814783,
-              "fields": [
-                {"name": "👤 Actor", "value": os.environ["ACTOR"], "inline": True},
-                {"name": "🌿 Branch", "value": os.environ["BRANCH"], "inline": True},
-                {"name": "💬 Commit", "value": os.environ.get("MESSAGE", "N/A")},
-                {"name": "🔗 Link", "value": os.environ.get("URL", "N/A")}
-              ]
-            }]
-          }
-          data = json.dumps(payload).encode("utf-8")
-          req = urllib.request.Request(webhook, data=data, headers={"Content-Type": "application/json"})
-          urllib.request.urlopen(req)
-          print("Notification sent!")
-          EOF
+        with:
+          args: |
+            📦 **${{ github.repository }}**
+            🔔 **Event:** ${{ github.event_name }}
+            👤 **By:** ${{ github.actor }}
+            🌿 **Branch:** ${{ github.ref_name }}
+            💬 **Message:** ${{ github.event.head_commit.message }}
+            🔗 ${{ github.event.head_commit.url }}
