@@ -27,7 +27,15 @@ jobs:
           python3 - <<'EOF'
           import json, os, urllib.request
 
-          webhook = os.environ["DISCORD_WEBHOOK"]
+          webhook = os.environ.get("DISCORD_WEBHOOK", "").strip()
+
+          if not webhook:
+            print("ERROR: DISCORD_WEBHOOK secret is empty or not set!")
+            print("Go to: Settings > Secrets and variables > Actions > New repository secret")
+            print("Name: DISCORD_WEBHOOK")
+            print("Value: your Discord webhook URL (starts with https://discord.com/api/webhooks/...)")
+            exit(1)
+
           payload = {
             "embeds": [{
               "title": f"{os.environ['EVENT']} in {os.environ['REPO']}",
