@@ -2,15 +2,27 @@ name: Discord Notifications
 
 on:
   push:
-    branches: [master, main]
+    branches: ["*"]
+  pull_request:
+    types: [opened, closed, merged]
+  issues:
+    types: [opened, closed]
+  release:
+    types: [published]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord message
-        run: |
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "{\"content\": \"New push to branch ${{ github.ref_name }} by ${{ github.actor }}\"}" \
-          ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Send Discord Notification
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            📦 **${{ github.repository }}**
+            🔔 **Event:** ${{ github.event_name }}
+            👤 **By:** ${{ github.actor }}
+            🌿 **Branch:** ${{ github.ref_name }}
+            💬 **Message:** ${{ github.event.head_commit.message }}
+            🔗 ${{ github.event.head_commit.url }}
