@@ -2,48 +2,36 @@ name: Discord Notifications
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]   # triggers on both branches
   pull_request:
     types: [opened, closed, merged]
   release:
     types: [published]
 
 jobs:
-  discord:
+  notify:
     runs-on: ubuntu-latest
     steps:
+      # -----------------------
+      # Push notifications
+      # -----------------------
       - name: Push Notification
         if: github.event_name == 'push'
-        uses: wei/git-discord@v2
-        with:
-          webhook: https://discordapp.com/api/webhooks/1475246351251148944/mO5g8YjtwPOlhKgs54_9NPAdla-SEqwDCSSHQhgD50XsrYsxO-2q4S8XQG3PVSk11FWT
-          username: "GitHub Bot"
-          avatar: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          content: |
-            **New push to ${{ github.ref_name }} branch!**
-            Commit by ${{ github.actor }}: ${{ github.event.head_commit.message }}
+        shell: nu
+        run: curl -X POST -H "Content-Type: application/json" -d '{"content": "**New push to '${{ github.ref_name }}' by '${{ github.actor }}'**\nCommit: '${{ github.event.head_commit.message }}'"}' ${{ secrets.DISCORD_WEBHOOK }}
 
+      # -----------------------
+      # Pull Request notifications
+      # -----------------------
       - name: Pull Request Notification
         if: github.event_name == 'pull_request'
-        uses: wei/git-discord@v2
-        with:
-          webhook: https://discordapp.com/api/webhooks/1475246351251148944/mO5g8YjtwPOlhKgs54_9NPAdla-SEqwDCSSHQhgD50XsrYsxO-2q4S8XQG3PVSk11FWT
-          username: "GitHub Bot"
-          avatar: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          content: |
-            **Pull request ${{ github.event.action }}**
-            Title: ${{ github.event.pull_request.title }}
-            By: ${{ github.event.pull_request.user.login }}
-            URL: ${{ github.event.pull_request.html_url }}
+        shell: nu
+        run: curl -X POST -H "Content-Type: application/json" -d '{"content": "**Pull request '${{ github.event.action }}'**\nTitle: '${{ github.event.pull_request.title }}'\nBy: '${{ github.event.pull_request.user.login }}'\nURL: '${{ github.event.pull_request.html_url }}'"}' ${{ secrets.DISCORD_WEBHOOK }}
 
+      # -----------------------
+      # Release notifications
+      # -----------------------
       - name: Release Notification
         if: github.event_name == 'release'
-        uses: wei/git-discord@v2
-        with:
-          webhook: https://discordapp.com/api/webhooks/1475246351251148944/mO5g8YjtwPOlhKgs54_9NPAdla-SEqwDCSSHQhgD50XsrYsxO-2q4S8XQG3PVSk11FWT
-          username: "GitHub Bot"
-          avatar: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          content: |
-            **New release: ${{ github.event.release.tag_name }}**
-            By: ${{ github.event.release.author.login }}
-            URL: ${{ github.event.release.html_url }}
+        shell: nu
+        run: curl -X POST -H "Content-Type: application/json" -d '{"content": "**New release: '${{ github.event.release.tag_name }}'**\nBy: '${{ github.event.release.author.login }}'\nURL: '${{ github.event.release.html_url }}'"}' ${{ secrets.DISCORD_WEBHOOK }}
