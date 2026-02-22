@@ -15,7 +15,7 @@ jobs:
       - name: Send Discord Notification
         uses: wei/git-discord@v2
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook: ${{ https://discordapp.com/api/webhooks/1475246351251148944/mO5g8YjtwPOlhKgs54_9NPAdla-SEqwDCSSHQhgD50XsrYsxO-2q4S8XQG3PVSk11FWT }}
           username: "GitHub Bot"
           avatar: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
           content: |
