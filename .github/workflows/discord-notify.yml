@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord message
-        shell: zsh
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
